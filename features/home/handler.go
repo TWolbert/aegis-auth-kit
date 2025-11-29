@@ -8,13 +8,24 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+type StatusMessage struct {
+	StatusType    string
+	StatusMessage string
+}
+
 func renderTempl(c *fiber.Ctx, component templ.Component) error {
 	c.Set("Content-Type", "text/html")
 	return component.Render(c.Context(), c.Response().BodyWriter())
 }
 
 func IndexHandler(c *fiber.Ctx) error {
-	return renderTempl(c, IndexPage())
+	statusType := c.Query("statusType", "")
+	statusMessage := c.Query("statusMessage", "")
+
+	return renderTempl(c, IndexPage(StatusMessage{
+		StatusType:    statusType,
+		StatusMessage: statusMessage,
+	}))
 }
 
 func AboutHandler(c *fiber.Ctx) error {

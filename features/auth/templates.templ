@@ -9,7 +9,7 @@ templ LoginPage() {
 				<div class="bg-white rounded-lg shadow-md p-8">
 					<h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Login</h2>
 					<div id="error-container" class="mb-4"></div>
-					<form class="space-y-4" hx-post="/login" hx-target="#error-container" hx-swap="innerHTML" novalidate>
+					<form hx-boost="true" class="space-y-4" hx-post="/login" hx-target="#error-container" hx-swap="innerHTML" novalidate>
 						<div>
 							<label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
 							<input
@@ -51,7 +51,8 @@ templ RegisterPage() {
 			<div class="max-w-md w-full">
 				<div class="bg-white rounded-lg shadow-md p-8">
 					<h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Create Account</h2>
-					<form class="space-y-4">
+					<div id="error-container" class="mb-4"></div>
+					<form hx-boost="true" class="space-y-4" hx-post="/register" hx-target="#error-container" hx-swap="innerHTML" novalidate>
 						<div>
 							<label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
 							<input
