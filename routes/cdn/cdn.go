@@ -13,7 +13,7 @@ func HTMXJS(c *fiber.Ctx) error {
 }
 
 func TailwindCSS(c *fiber.Ctx) error {
-	return c.SendFile("./css/output.css", true)
+	return c.SendFile("./css/output/output.css", true)
 }
 
 func IndexHTML(c *fiber.Ctx) error {
