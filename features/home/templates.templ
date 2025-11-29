@@ -1,0 +1,83 @@
+package home
+
+import (
+	"aegis.wlbt.nl/aegis-auth/templates"
+	"time"
+	"fmt"
+)
+
+templ IndexPage() {
+	@templates.Layout("Aegis - Home") {
+		<div class="flex items-center justify-center p-4 mt-8">
+			<div class="max-w-md w-full space-y-8">
+				<div class="text-center">
+					<h1 class="text-4xl font-bold text-gray-900 mb-2">Welcome to Aegis</h1>
+					<p class="text-gray-600">Tailwind CSS v4 + HTMX + Alpine.js</p>
+				</div>
+				<div class="bg-white rounded-lg shadow-md p-6 space-y-4">
+					<button
+						hx-get="/message"
+						hx-target="#result"
+						hx-swap="innerHTML"
+						class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 active:scale-95 transform"
+					>
+						Click me
+					</button>
+					<button
+						hx-get="/db/health"
+						hx-target="#db-result"
+						hx-swap="innerHTML"
+						class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 active:scale-95 transform"
+					>
+						Check DB Connection
+					</button>
+					<div
+						id="result"
+						class="text-gray-700 font-medium text-center"
+					></div>
+					<div
+						id="db-result"
+						class="text-gray-700 text-sm text-center bg-gray-50 rounded-lg p-4"
+					></div>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ AboutPage() {
+	@templates.Layout("Aegis - About") {
+		<div class="max-w-4xl mx-auto px-4 py-12">
+			<div class="bg-white rounded-lg shadow-md p-8">
+				<h1 class="text-3xl font-bold text-gray-900 mb-4">About Aegis</h1>
+				<div class="prose prose-lg text-gray-700 space-y-4">
+					<p>
+						Aegis is a modern authentication kit built with:
+					</p>
+					<ul class="list-disc list-inside space-y-2 ml-4">
+						<li><strong>Go Fiber</strong> - Fast HTTP framework</li>
+						<li><strong>Templ</strong> - Type-safe Go templates</li>
+						<li><strong>HTMX</strong> - Dynamic interactions without JavaScript</li>
+						<li><strong>Alpine.js</strong> - Lightweight JavaScript framework</li>
+						<li><strong>Tailwind CSS v4</strong> - Utility-first CSS</li>
+					</ul>
+					<p class="mt-6">
+						This is a demo application showcasing the tech stack.
+					</p>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ DBHealthSuccess(userCount int64, timestamp time.Time) {
+	<div class="space-y-2">
+		<div class="text-green-600 font-semibold">✓ Database Connected</div>
+		<div class="text-sm text-gray-600">Users: { fmt.Sprintf("%d", userCount) }</div>
+		<div class="text-xs text-gray-500">{ timestamp.Format(time.RFC3339) }</div>
+	</div>
+}
+
+templ DBHealthError(errorMsg string) {
+	<div class="text-red-600 font-semibold">❌ Error: { errorMsg }</div>
+}
