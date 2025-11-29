@@ -1,4 +1,6 @@
 *.fiber.gz
 tmp
 node_modules
-css/output.css
+aegis-auth
+aegis.db
+css/output
