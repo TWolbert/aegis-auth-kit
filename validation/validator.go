@@ -1,12 +1,16 @@
 package v
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 
+	"aegis.wlbt.nl/aegis-auth/database"
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 type Rule func(input any) (bool, string, string)
@@ -82,6 +86,27 @@ func IsEmail(field string) Rule {
 		}
 
 		return true, "", ""
+	}
+}
+
+func IsntExisting[T any](field string, model T, query string, value any, ctx context.Context) Rule {
+	return func(_ any) (bool, string, string) {
+		_, err := gorm.G[T](database.DB).Where(query, value).First(ctx)
+
+		switch {
+		case err == nil:
+			return false,
+				underscoresToSpaces(capitalizeFirst(field)) + " is already taken!",
+				field
+
+		case errors.Is(err, gorm.ErrRecordNotFound):
+			return true, "", ""
+
+		default:
+			return false,
+				underscoresToSpaces(capitalizeFirst(field)) + " could not be checked!",
+				field
+		}
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 	"aegis.wlbt.nl/aegis-auth/features/auth"
 	"aegis.wlbt.nl/aegis-auth/features/home"
 	"aegis.wlbt.nl/aegis-auth/features/middleware"
+	"aegis.wlbt.nl/aegis-auth/features/profile"
 	routes_cdn "aegis.wlbt.nl/aegis-auth/routes/cdn"
 	"github.com/gofiber/fiber/v2"
 )
@@ -44,6 +45,9 @@ func main() {
 	app.Post("/login", auth.LoginPostHandler)
 	app.Post("/register", auth.RegisterPostHandler)
 	app.Get("/logout", auth.LogoutHandler)
+
+	app.Get("/profile", middleware.RequiresAuth, profile.IndexHandler)
+	app.Post("/profile/update", middleware.RequiresAuth, profile.PostUpdateProfile)
 
 	log.Fatal(app.Listen(":3000"))
 }

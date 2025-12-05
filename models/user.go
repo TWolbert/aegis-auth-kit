@@ -1,8 +1,10 @@
 package models
 
 import (
+	"context"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -18,4 +20,30 @@ type User struct {
 	// Relationships
 	VerifiedEmails []VerifiedEmail `gorm:"foreignKey:UserID" json:"verified_emails,omitempty"`
 	SessionTokens  []SessionToken  `gorm:"foreignKey:UserID" json:"-"`
+}
+
+func (user *User) Update(ctx context.Context, db *gorm.DB, username string, email string, password string) (bool, error) {
+	newUser := User{}
+
+	if username != "" {
+		newUser.Username = username
+	}
+
+	if email != "" {
+		newUser.Email = email
+	}
+
+	if password != "" {
+		hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+		if err == nil {
+			newUser.Password = string(hash)
+		}
+	}
+
+	_, err := gorm.G[User](db).Where("id = ?", user.ID).Updates(ctx, newUser)
+
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }

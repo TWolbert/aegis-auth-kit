@@ -1,0 +1,97 @@
+package profile
+
+import "aegis.wlbt.nl/aegis-auth/templates"
+import "aegis.wlbt.nl/aegis-auth/models"
+import "aegis.wlbt.nl/aegis-auth/features/home"
+
+templ ProfilePage(user *models.User, Status home.StatusMessage) {
+	@templates.Layout("Aegis - " + user.Username) {
+		<div class="flex flex-col justify-center p-4 mt-8 w-full">
+			<p class="text-3xl border-b border-blue-200">
+				You are <span class="font-bold">{ user.Username }</span>
+			</p>
+			<div class="mb-4 mt-4">
+				<div id="error-container"></div>
+				@home.StatusComponent(Status)
+			</div>
+			<form id="profile-form" hx-boost="true" class="space-y-4" hx-post="/profile/update" hx-target="#error-container" hx-swap="innerHTML" novalidate>
+				<div>
+					<label for="username" class="block text-sm font-medium text-gray-700 mb-1">Change username</label>
+					<input
+						id="username"
+						name="username"
+						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+						placeholder={ user.Username }
+					/>
+					<label for="email" class="block text-sm font-medium text-gray-700 mb-1">Change email</label>
+					<input
+						id="email"
+						name="email"
+						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+						placeholder={ user.Email }
+					/>
+					<label for="username" class="block text-sm font-medium text-gray-700 mb-1">Change password</label>
+					<input
+						id="password"
+						name="password"
+						type="password"
+						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+						placeholder="••••••••"
+					/>
+					<label for="currentPass" class="block text-sm font-medium text-gray-700 mb-1">Current password (for verification)</label>
+					<input
+						id="currentPassword"
+						name="currentPassword"
+						type="password"
+						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+						placeholder="••••••••"
+					/>
+					<button
+						type="submit"
+						class="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+					>
+						Update profile
+					</button>
+				</div>
+			</form>
+			<script>
+				(function () {
+					// Only run in browsers that support history.replaceState
+					if (!window.history || !window.history.replaceState) {
+						return;
+					}
+
+					let cleared = false;
+					const form = document.getElementById("profile-form");
+					if (!form) return;
+
+					let inputs = form.querySelectorAll("input, textarea, select");
+
+					function clearQueryStringOnce() {
+					    const statusComponent = document.getElementById("statusComponent");
+						if (statusComponent) statusComponent.remove()
+
+						if (cleared) return;
+						cleared = true;
+
+						const url = new URL(window.location.href);
+						if (url.search) {
+							url.search = "";
+							window.history.replaceState(
+								null,
+								"",
+								url.toString()
+							);
+						}
+					}
+
+					inputs.forEach(function (el) {
+						el.addEventListener("input", clearQueryStringOnce, {
+							once: false,
+						});
+					});
+				})();
+			</script>
+		</div>
+	}
+}

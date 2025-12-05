@@ -2,8 +2,8 @@ package home
 
 import (
 	"aegis.wlbt.nl/aegis-auth/templates"
-	"time"
 	"fmt"
+	"time"
 )
 
 templ IndexPage(Status StatusMessage) {
@@ -50,14 +50,14 @@ templ IndexPage(Status StatusMessage) {
 
 templ StatusComponent(status StatusMessage) {
 	if status.StatusType == "success" {
-		<div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
+		<div id="statusComponent" class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
 			<div class="flex items-center">
 				<span class="text-green-600 mr-2">✓</span>
 				<span class="font-medium">{ status.StatusMessage }</span>
 			</div>
 		</div>
 	} else if status.StatusType == "error" {
-		<div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+		<div id="statusComponent" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
 			<div class="flex items-center">
 				<span class="text-red-600 mr-2">✗</span>
 				<span class="font-medium">{ status.StatusMessage }</span>

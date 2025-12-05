@@ -41,7 +41,7 @@ templ Navbar() {
 				</div>
 				<div class="flex items-center space-x-6">
 					<a href="/" class="text-gray-700 hover:text-gray-900 font-medium transition-colors">Home</a>
-					<a href="/about" class="text-gray-700 hover:text-gray-900 font-medium transition-colors">About</a>
+					<a href="/protected" class="text-gray-700 hover:text-gray-900 font-medium transition-colors">About</a>
 					<div id="navSkeleton" hx-preserve hx-get="/api/navbar-user" hx-trigger="load once" hx-swap="outerHTML">
 						@NavbarUserSkeleton()
 					</div>
@@ -64,7 +64,7 @@ templ NavbarUser(user *models.User) {
 			<a href="/login" class="text-gray-700 hover:text-gray-900 font-medium transition-colors">Login</a>
 			<a href="/register" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors">Register</a>
 		} else {
-			<span class="text-gray-700">Welcome, { user.Username }</span>
+			<a href="/profile" class="text-gray-700">Welcome, { user.Username }</a>
 			<a href="/logout" class="text-gray-700 hover:text-gray-900 font-medium transition-colors">Logout</a>
 		}
 	</div>

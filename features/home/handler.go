@@ -6,7 +6,6 @@ import (
 	"aegis.wlbt.nl/aegis-auth/database"
 	"aegis.wlbt.nl/aegis-auth/features/utils"
 	"aegis.wlbt.nl/aegis-auth/templates"
-	"github.com/a-h/templ"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -15,23 +14,18 @@ type StatusMessage struct {
 	StatusMessage string
 }
 
-func renderTempl(c *fiber.Ctx, component templ.Component) error {
-	c.Set("Content-Type", "text/html")
-	return component.Render(c.Context(), c.Response().BodyWriter())
-}
-
 func IndexHandler(c *fiber.Ctx) error {
 	statusType := c.Query("statusType", "")
 	statusMessage := c.Query("statusMessage", "")
 
-	return renderTempl(c, IndexPage(StatusMessage{
+	return utils.RenderTempl(c, IndexPage(StatusMessage{
 		StatusType:    statusType,
 		StatusMessage: statusMessage,
 	}))
 }
 
 func AboutHandler(c *fiber.Ctx) error {
-	return renderTempl(c, AboutPage())
+	return utils.RenderTempl(c, AboutPage())
 }
 
 func MessageHandler(c *fiber.Ctx) error {
@@ -41,20 +35,20 @@ func MessageHandler(c *fiber.Ctx) error {
 func DBHealthHandler(c *fiber.Ctx) error {
 	sqlDB, err := database.DB.DB()
 	if err != nil {
-		return renderTempl(c, DBHealthError(err.Error()))
+		return utils.RenderTempl(c, DBHealthError(err.Error()))
 	}
 
 	if err := sqlDB.Ping(); err != nil {
-		return renderTempl(c, DBHealthError("Ping failed: "+err.Error()))
+		return utils.RenderTempl(c, DBHealthError("Ping failed: "+err.Error()))
 	}
 
 	var count int64
 	database.DB.Table("users").Count(&count)
 
-	return renderTempl(c, DBHealthSuccess(count, time.Now()))
+	return utils.RenderTempl(c, DBHealthSuccess(count, time.Now()))
 }
 
 func NavbarUserHandler(c *fiber.Ctx) error {
 	user := utils.GetUserFromContext(c)
-	return renderTempl(c, templates.NavbarUser(user))
+	return utils.RenderTempl(c, templates.NavbarUser(user))
 }

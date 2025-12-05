@@ -7,23 +7,17 @@ import (
 	"aegis.wlbt.nl/aegis-auth/features/utils"
 	"aegis.wlbt.nl/aegis-auth/models"
 	v "aegis.wlbt.nl/aegis-auth/validation"
-	"github.com/a-h/templ"
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
-func renderTempl(c *fiber.Ctx, component templ.Component) error {
-	c.Set("Content-Type", "text/html")
-	return component.Render(c.Context(), c.Response().BodyWriter())
-}
-
 func LoginHandler(c *fiber.Ctx) error {
-	return renderTempl(c, LoginPage())
+	return utils.RenderTempl(c, LoginPage())
 }
 
 func RegisterHandler(c *fiber.Ctx) error {
-	return renderTempl(c, RegisterPage())
+	return utils.RenderTempl(c, RegisterPage())
 }
 
 // TODO: Implement actual login logic
@@ -65,9 +59,14 @@ func LoginPostHandler(c *fiber.Ctx) error {
 		SameSite: fiber.CookieSameSiteLaxMode,
 	})
 
-	// Redirect to home with success message using HX-Redirect header for HTMX
-	c.Set("HX-Redirect", "/?statusType=success&statusMessage=Login+successful!+Welcome+back+ "+user.Username+".")
-	return c.SendStatus(fiber.StatusOK)
+	return utils.HTMXRedirect(c, "/", []utils.UrlParams{
+		{
+			Key: "statusType", Message: "success",
+		},
+		{
+			Key: "statusMessage", Message: "Login successful, welcome back " + user.Username + "!",
+		},
+	})
 }
 
 func RegisterPostHandler(c *fiber.Ctx) error {
@@ -75,11 +74,11 @@ func RegisterPostHandler(c *fiber.Ctx) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 
-	if err := v.Validate(username, v.IsNotEmpty("username"), v.IsMinLength("username", 3)); err != nil {
+	if err := v.Validate(username, v.IsNotEmpty("username"), v.IsMinLength("username", 3), v.IsntExisting("username", models.User{}, "username = ?", username, c.Context())); err != nil {
 		return v.ErrorToHTML(c, err)
 	}
 
-	if err := v.Validate(email, v.IsNotEmpty("email"), v.IsEmail("email")); err != nil {
+	if err := v.Validate(email, v.IsNotEmpty("email"), v.IsEmail("email"), v.IsntExisting("email", models.User{}, "email = ?", email, c.Context())); err != nil {
 		return v.ErrorToHTML(c, err)
 	}
 
@@ -116,12 +115,29 @@ func RegisterPostHandler(c *fiber.Ctx) error {
 	})
 
 	// Redirect to home with success message using HX-Redirect header for HTMX
-	c.Set("HX-Redirect", "/?statusType=success&statusMessage=Registration+successful!+Welcome+To+Aegis.")
-	return c.SendStatus(fiber.StatusOK)
+	return utils.HTMXRedirect(c, "/", []utils.UrlParams{
+		{
+			Key: "statusType", Message: "success",
+		},
+		{
+			Key: "statusMessage", Message: "Registration successful! Welcome to Aegis.",
+		},
+	})
 }
 
 func LogoutHandler(c *fiber.Ctx) error {
 	user := utils.GetUserFromContext(c)
+
+	if user == nil {
+		return utils.Redirect(c, "/", []utils.UrlParams{
+			{
+				Key: "statusType", Message: "error",
+			},
+			{
+				Key: "statusMessage", Message: "No user to log out.",
+			},
+		})
+	}
 
 	for _, token := range user.SessionTokens {
 		token.Delete(c.Context(), database.DB)
@@ -129,7 +145,12 @@ func LogoutHandler(c *fiber.Ctx) error {
 
 	c.ClearCookie("aegis-token")
 
-	c.Set("HX-Redirect", "/?statusType=success&statusMessage=Logged+out+succesfully.")
-
-	return c.SendStatus(fiber.StatusOK)
+	return utils.HTMXRedirect(c, "/", []utils.UrlParams{
+		{
+			Key: "statusType", Message: "success",
+		},
+		{
+			Key: "statusMessage", Message: "Logged out succesfully.",
+		},
+	})
 }

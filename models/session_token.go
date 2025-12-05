@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
@@ -27,6 +28,10 @@ type SessionToken struct {
 // IsExpired checks if the session token has expired
 func (s *SessionToken) IsExpired() bool {
 	return time.Now().After(s.ExpiresAt)
+}
+
+func (s *SessionToken) OwnedByIp(c *fiber.Ctx) bool {
+	return s.IPAddress == c.IP()
 }
 
 func generateSecureToken(length int) string {
@@ -54,12 +59,12 @@ func (s *SessionToken) Delete(ctx context.Context, db *gorm.DB) {
 	gorm.G[SessionToken](db).Where("token = ?", s.Token).Delete(ctx)
 }
 
-func GetUserByToken(ctx context.Context, db *gorm.DB, token string) (*User, error) {
+func GetUserByToken(ctx context.Context, db *gorm.DB, token string) (*User, *SessionToken, error) {
 	data, err := gorm.G[SessionToken](db).Preload("User", nil).Where("token = ?", token).First(ctx)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return &data.User, nil
+	return &data.User, &data, nil
 }
