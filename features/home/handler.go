@@ -4,7 +4,8 @@ import (
 	"time"
 
 	"aegis.wlbt.nl/aegis-auth/database"
-	"aegis.wlbt.nl/aegis-auth/models"
+	"aegis.wlbt.nl/aegis-auth/features/utils"
+	"aegis.wlbt.nl/aegis-auth/templates"
 	"github.com/a-h/templ"
 	"github.com/gofiber/fiber/v2"
 )
@@ -21,13 +22,11 @@ func renderTempl(c *fiber.Ctx, component templ.Component) error {
 
 func IndexHandler(c *fiber.Ctx) error {
 	statusType := c.Query("statusType", "")
-	// statusMessage := c.Query("statusMessage", "")
-
-	user := c.Locals("user").(*models.User)
+	statusMessage := c.Query("statusMessage", "")
 
 	return renderTempl(c, IndexPage(StatusMessage{
 		StatusType:    statusType,
-		StatusMessage: user.Email,
+		StatusMessage: statusMessage,
 	}))
 }
 
@@ -53,4 +52,9 @@ func DBHealthHandler(c *fiber.Ctx) error {
 	database.DB.Table("users").Count(&count)
 
 	return renderTempl(c, DBHealthSuccess(count, time.Now()))
+}
+
+func NavbarUserHandler(c *fiber.Ctx) error {
+	user := utils.GetUserFromContext(c)
+	return renderTempl(c, templates.NavbarUser(user))
 }

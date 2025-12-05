@@ -50,8 +50,12 @@ func CreateToken(ctx context.Context, db *gorm.DB, user User, expiry time.Time, 
 	return &sessionToken, nil
 }
 
+func (s *SessionToken) Delete(ctx context.Context, db *gorm.DB) {
+	gorm.G[SessionToken](db).Where("token = ?", s.Token).Delete(ctx)
+}
+
 func GetUserByToken(ctx context.Context, db *gorm.DB, token string) (*User, error) {
-	data, err := gorm.G[SessionToken](db).Where("token = ?", token).First(ctx)
+	data, err := gorm.G[SessionToken](db).Preload("User", nil).Where("token = ?", token).First(ctx)
 
 	if err != nil {
 		return nil, err

@@ -36,12 +36,14 @@ func main() {
 	app.Get("/about", home.AboutHandler)
 	app.Get("/message", home.MessageHandler)
 	app.Get("/db/health", home.DBHealthHandler)
+	app.Get("/api/navbar-user", home.NavbarUserHandler)
 
 	// Auth feature
 	app.Get("/login", auth.LoginHandler)
 	app.Get("/register", auth.RegisterHandler)
 	app.Post("/login", auth.LoginPostHandler)
 	app.Post("/register", auth.RegisterPostHandler)
+	app.Get("/logout", auth.LogoutHandler)
 
 	log.Fatal(app.Listen(":3000"))
 }

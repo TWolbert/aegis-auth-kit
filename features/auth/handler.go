@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"aegis.wlbt.nl/aegis-auth/database"
+	"aegis.wlbt.nl/aegis-auth/features/utils"
 	"aegis.wlbt.nl/aegis-auth/models"
 	v "aegis.wlbt.nl/aegis-auth/validation"
 	"github.com/a-h/templ"
@@ -38,10 +39,37 @@ func LoginPostHandler(c *fiber.Ctx) error {
 		return v.ErrorToHTML(c, err)
 	}
 
-	return c.SendString("Login successful - email: " + email)
+	user, err := gorm.G[models.User](database.DB).Where("email = ?", email).First(c.Context())
+
+	if err != nil || user.ID == 0 {
+		return v.ErrorToHTML(c, fiber.NewError(404, "User not found!"))
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+
+	if err != nil {
+		return v.ErrorToHTML(c, fiber.NewError(401, "Password incorrect!"))
+	}
+
+	token, err := models.CreateToken(c.Context(), database.DB, user, time.Now().AddDate(0, 1, 0), c.IP(), string(c.Context().UserAgent()))
+
+	if err != nil {
+		return v.ErrorToHTML(c, fiber.NewError(500, err.Error()))
+	}
+
+	c.Cookie(&fiber.Cookie{
+		HTTPOnly: true,
+		Name:     "aegis-token",
+		Value:    token.Token,
+		Expires:  token.ExpiresAt,
+		SameSite: fiber.CookieSameSiteLaxMode,
+	})
+
+	// Redirect to home with success message using HX-Redirect header for HTMX
+	c.Set("HX-Redirect", "/?statusType=success&statusMessage=Login+successful!+Welcome+back+ "+user.Username+".")
+	return c.SendStatus(fiber.StatusOK)
 }
 
-// TODO: Implement actual registration logic
 func RegisterPostHandler(c *fiber.Ctx) error {
 	username := c.FormValue("username")
 	email := c.FormValue("email")
@@ -89,5 +117,19 @@ func RegisterPostHandler(c *fiber.Ctx) error {
 
 	// Redirect to home with success message using HX-Redirect header for HTMX
 	c.Set("HX-Redirect", "/?statusType=success&statusMessage=Registration+successful!+Welcome+To+Aegis.")
+	return c.SendStatus(fiber.StatusOK)
+}
+
+func LogoutHandler(c *fiber.Ctx) error {
+	user := utils.GetUserFromContext(c)
+
+	for _, token := range user.SessionTokens {
+		token.Delete(c.Context(), database.DB)
+	}
+
+	c.ClearCookie("aegis-token")
+
+	c.Set("HX-Redirect", "/?statusType=success&statusMessage=Logged+out+succesfully.")
+
 	return c.SendStatus(fiber.StatusOK)
 }

@@ -14,8 +14,6 @@ func Auth(c *fiber.Ctx) error {
 		return c.Next()
 	}
 
-	println(cookie)
-
 	user, err := models.GetUserByToken(c.Context(), database.DB, cookie)
 
 	if err != nil {
@@ -23,7 +21,6 @@ func Auth(c *fiber.Ctx) error {
 		return c.Next()
 	}
 
-	println(user.ID)
 	c.Locals("user", user)
 	return c.Next()
 }

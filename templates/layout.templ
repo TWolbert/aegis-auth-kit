@@ -1,5 +1,7 @@
 package templates
 
+import "aegis.wlbt.nl/aegis-auth/models"
+
 templ Layout(title string) {
 	<!DOCTYPE html>
 	<html lang="en">
@@ -21,7 +23,7 @@ templ Layout(title string) {
 				}
 			</style>
 		</head>
-		<body class="bg-gray-50 min-h-screen">
+		<body class="bg-gray-50 min-h-screen" hx-boost="true">
 			@Navbar()
 			<main>
 				{ children... }
@@ -31,19 +33,39 @@ templ Layout(title string) {
 }
 
 templ Navbar() {
-	<nav class="bg-white shadow-md">
+	<nav id="navbar" class="bg-white shadow-md" hx-preserve="true">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="flex justify-between h-16">
 				<div class="flex items-center">
 					<a href="/" class="text-2xl font-bold text-gray-900">Aegis</a>
 				</div>
-				<div class="flex items-center space-x-6" hx-boost="true">
+				<div class="flex items-center space-x-6">
 					<a href="/" class="text-gray-700 hover:text-gray-900 font-medium transition-colors">Home</a>
 					<a href="/about" class="text-gray-700 hover:text-gray-900 font-medium transition-colors">About</a>
-					<a href="/login" class="text-gray-700 hover:text-gray-900 font-medium transition-colors">Login</a>
-					<a href="/register" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors">Register</a>
+					<div id="navSkeleton" hx-preserve hx-get="/api/navbar-user" hx-trigger="load once" hx-swap="outerHTML">
+						@NavbarUserSkeleton()
+					</div>
 				</div>
 			</div>
 		</div>
 	</nav>
+}
+
+templ NavbarUserSkeleton() {
+	<div class="flex items-center space-x-6">
+		<div class="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+		<div class="h-9 w-20 bg-gray-200 rounded-lg animate-pulse"></div>
+	</div>
+}
+
+templ NavbarUser(user *models.User) {
+	<div class="flex items-center space-x-6">
+		if user == nil {
+			<a href="/login" class="text-gray-700 hover:text-gray-900 font-medium transition-colors">Login</a>
+			<a href="/register" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors">Register</a>
+		} else {
+			<span class="text-gray-700">Welcome, { user.Username }</span>
+			<a href="/logout" class="text-gray-700 hover:text-gray-900 font-medium transition-colors">Logout</a>
+		}
+	</div>
 }
