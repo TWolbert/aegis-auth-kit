@@ -6,6 +6,7 @@ import (
 	"aegis.wlbt.nl/aegis-auth/database"
 	"aegis.wlbt.nl/aegis-auth/features/auth"
 	"aegis.wlbt.nl/aegis-auth/features/home"
+	"aegis.wlbt.nl/aegis-auth/features/middleware"
 	routes_cdn "aegis.wlbt.nl/aegis-auth/routes/cdn"
 	"github.com/gofiber/fiber/v2"
 )
@@ -22,6 +23,8 @@ func main() {
 	if !fiber.IsChild() {
 		database.Migrate()
 	}
+
+	app.Use(middleware.Auth)
 
 	// Static assets (CDN)
 	app.Get("/aegis-htmx.js", routes_cdn.HTMXJS)

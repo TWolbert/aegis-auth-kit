@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"time"
+
 	"aegis.wlbt.nl/aegis-auth/database"
 	"aegis.wlbt.nl/aegis-auth/models"
 	v "aegis.wlbt.nl/aegis-auth/validation"
@@ -71,7 +73,21 @@ func RegisterPostHandler(c *fiber.Ctx) error {
 		return v.ErrorToHTML(c, fiber.NewError(500, err.Error()))
 	}
 
+	token, err := models.CreateToken(c.Context(), database.DB, user, time.Now().AddDate(0, 1, 0), c.IP(), string(c.Context().UserAgent()))
+
+	if err != nil {
+		return v.ErrorToHTML(c, fiber.NewError(500, err.Error()))
+	}
+
+	c.Cookie(&fiber.Cookie{
+		HTTPOnly: true,
+		Name:     "aegis-token",
+		Value:    token.Token,
+		Expires:  token.ExpiresAt,
+		SameSite: fiber.CookieSameSiteLaxMode,
+	})
+
 	// Redirect to home with success message using HX-Redirect header for HTMX
-	c.Set("HX-Redirect", "/?statusType=success&statusMessage=Registration+successful!+Welcome+to+Aegis.")
+	c.Set("HX-Redirect", "/?statusType=success&statusMessage=Registration+successful!+Welcome+To+Aegis.")
 	return c.SendStatus(fiber.StatusOK)
 }

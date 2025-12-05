@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"aegis.wlbt.nl/aegis-auth/database"
+	"aegis.wlbt.nl/aegis-auth/models"
 	"github.com/a-h/templ"
 	"github.com/gofiber/fiber/v2"
 )
@@ -20,11 +21,13 @@ func renderTempl(c *fiber.Ctx, component templ.Component) error {
 
 func IndexHandler(c *fiber.Ctx) error {
 	statusType := c.Query("statusType", "")
-	statusMessage := c.Query("statusMessage", "")
+	// statusMessage := c.Query("statusMessage", "")
+
+	user := c.Locals("user").(*models.User)
 
 	return renderTempl(c, IndexPage(StatusMessage{
 		StatusType:    statusType,
-		StatusMessage: statusMessage,
+		StatusMessage: user.Email,
 	}))
 }
 
